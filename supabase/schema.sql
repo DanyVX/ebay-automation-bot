@@ -72,11 +72,31 @@ create table if not exists research_items (
   created_at timestamptz not null default now()
 );
 
+-- One repricing rule per listing: watches a competitor search term and
+-- keeps the listing's price at/under it within a margin-safe range.
+create table if not exists repricing_rules (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  listing_id uuid not null references listings (id) on delete cascade,
+  competitor_query text not null,
+  strategy text not null check (strategy in ('match_lowest', 'undercut_lowest')),
+  undercut_amount numeric(12, 2),
+  undercut_percent numeric(6, 4),
+  floor_price numeric(12, 2) not null,
+  ceiling_price numeric(12, 2),
+  enabled boolean not null default true,
+  last_applied_price numeric(12, 2),
+  last_applied_at timestamptz,
+  created_at timestamptz not null default now(),
+  unique (listing_id)
+);
+
 -- Row Level Security: every table is scoped to the owning user.
 alter table ebay_accounts enable row level security;
 alter table listings enable row level security;
 alter table price_history enable row level security;
 alter table research_items enable row level security;
+alter table repricing_rules enable row level security;
 
 create policy "Users manage their own ebay_accounts" on ebay_accounts
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
@@ -90,6 +110,10 @@ create policy "Users manage their own price_history" on price_history
 create policy "Users manage their own research_items" on research_items
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+create policy "Users manage their own repricing_rules" on repricing_rules
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
 create index if not exists listings_user_id_idx on listings (user_id);
 create index if not exists listings_ebay_account_id_idx on listings (ebay_account_id);
 create index if not exists research_items_user_id_idx on research_items (user_id);
+create index if not exists repricing_rules_user_id_idx on repricing_rules (user_id);

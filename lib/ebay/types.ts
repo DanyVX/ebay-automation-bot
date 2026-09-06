@@ -37,6 +37,28 @@ export interface ListingRow {
   last_synced_at: string;
 }
 
+export type RepricingStrategy = "match_lowest" | "undercut_lowest";
+
+export interface RepricingRuleRow {
+  id: string;
+  user_id: string;
+  listing_id: string;
+  competitor_query: string;
+  strategy: RepricingStrategy;
+  undercut_amount: number | null;
+  undercut_percent: number | null;
+  floor_price: number;
+  ceiling_price: number | null;
+  enabled: boolean;
+  last_applied_price: number | null;
+  last_applied_at: string | null;
+  created_at: string;
+}
+
+export interface RepricingRuleWithListing extends RepricingRuleRow {
+  listing: Pick<ListingRow, "sku" | "title" | "price" | "listing_url"> | null;
+}
+
 export interface ResearchItemRow {
   id: string;
   query: string;

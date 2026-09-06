@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { ListingRow } from "@/lib/ebay/types";
 
 export default function ListingsTable({ initialListings }: { initialListings: ListingRow[] }) {
@@ -120,6 +121,12 @@ export default function ListingsTable({ initialListings }: { initialListings: Li
                   {errorId?.id === listing.id && (
                     <p className="mt-1 text-xs text-red-600">{errorId.message}</p>
                   )}
+                  <Link
+                    href={`/dashboard/repricing?listingId=${listing.id}`}
+                    className="ml-2 text-xs text-slate-500 underline"
+                  >
+                    Set up repricing
+                  </Link>
                 </td>
               </tr>
             );
